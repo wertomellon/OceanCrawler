@@ -10,7 +10,7 @@ require 'TestPlayer'
 require 'Map'
 
 
-map = Map:new()
+map = Map:new(25, 15, 64)
 map:fill()
 
 

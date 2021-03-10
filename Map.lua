@@ -29,11 +29,15 @@ quadTable[1] = airTile
 quadTable[2] = solidTile
 
 
-function Map:new()
+function Map:new(width, height, size)
   local instance = {}
-  instance.height = MAP_HEIGHT
-  instance.width = MAP_WIDTH
-  instance.tileSize = TILE_SIZE
+  instance.height = height
+  instance.width = width
+  instance.tileSize = size
+  instance.rightBound = size * (width - 10.5)
+  instance.downBound = size * (height - 6)
+  instance.leftBound = 608
+  instance.upBound = 328
   
   setmetatable(instance, Map)
   return instance
@@ -41,13 +45,13 @@ end
 
 --Creates a 2d array that is filled with the ID of relevent tiles. NOTE this function does not fill the table with quads rather it fiils the table with a specific ID that corresponds with the index in the quadTable[] 
 function Map:fill()
-  for y = 1, MAP_HEIGHT do
+  for y = 1, self.height do
     table.insert(self, {})
     
-      for x = 1, MAP_WIDTH do
-        if y < 2 or y > MAP_HEIGHT - 1 then
+      for x = 1, self.width do
+        if y < 2 or y > self.height - 1 then
           table.insert(self[y], solidTileID)
-        else if x < 2 or x > MAP_WIDTH - 1 then
+        else if x < 2 or x > self.width - 1 then
           table.insert(self[y], solidTileID)
         else
           table.insert(self[y], airTileID)
@@ -84,28 +88,28 @@ end
 
   
 function Map:getLeftBound()
-  return 608
+  return self.leftBound
 end
 
 function Map:getRightBound()
-  return MAP_RIGHTBOUND
+  return self.rightBound
 end
 
 function Map:getUpBound()
-  return 328
+  return self.upBound
 end
 
 function Map:getDownBound()
-  return MAP_DOWNBOUND
+  return self.downBound
 end
 
 
   
   --Takes the array created in Map:fill() and uses the ID numbers to get the corresponding quad in the quadTable. The array created in Map:fill() is self[y][x] in this function. This function is used in love.draw()
 function Map:render()
-  for y = 1, MAP_HEIGHT do
-    for x = 1, MAP_WIDTH do 
-      love.graphics.draw(spriteSheet, quadTable[self[y][x]], ((x - 1) * TILE_SIZE), ((y -1) * TILE_SIZE))
+  for y = 1, self.height do
+    for x = 1, self.width do 
+      love.graphics.draw(spriteSheet, quadTable[self[y][x]], ((x - 1) * self.tileSize), ((y -1) * self.tileSize))
     end
   end
 end
@@ -113,17 +117,17 @@ end
 
 --This function Checks all 4 corners of the players hitbox and takes their position and converts it into the the corresponding tile in the tile grid. The player bounds function should keep the arrays within their apropriate indexes but returns false if out of the index anyways. self[][] is the tile ID 2d array. 
 function Map:collision(entity)
-  if entity.x < 0 or entity.x > MAP_WIDTH * TILE_SIZE or entity.y < 0 or entity.y > MAP_HEIGHT * TILE_SIZE then
+  if entity.x < 0 or entity.x > self.width * self.tileSize or entity.y < 0 or entity.y > self.height * self.tileSize then
     return false
-  else if entity.y + entity.height > MAP_HEIGHT * TILE_SIZE then
+  else if entity.y + entity.height > self.height * self.tileSize then
     return false
-  else if self[math.floor(((entity.y + 1) / TILE_SIZE) + 1)][math.floor(((entity.x + 1)/ TILE_SIZE) + 1)] == 2 then
+  else if self[math.floor(((entity.y + 1) / self.tileSize) + 1)][math.floor(((entity.x + 1)/ self.tileSize) + 1)] == 2 then
     return true
-  else if self[math.floor(((entity.y - 1) / TILE_SIZE) + 2)][math.floor(((entity.x - 1) / TILE_SIZE) + 2)] == 2 then
+  else if self[math.floor(((entity.y - 1) / self.tileSize) + 2)][math.floor(((entity.x - 1) / self.tileSize) + 2)] == 2 then
    return true
-  else if self[math.floor(((entity.y + 1) / TILE_SIZE) + 1)][math.floor(((entity.x - 1) / TILE_SIZE) + 2)] == 2 then
+  else if self[math.floor(((entity.y + 1) / self.tileSize) + 1)][math.floor(((entity.x - 1) / self.tileSize) + 2)] == 2 then
    return true
-   else if self[math.floor(((entity.y - 1) / TILE_SIZE) + 2)][math.floor(((entity.x + 1) / TILE_SIZE) + 1)] == 2 then
+   else if self[math.floor(((entity.y - 1) / self.tileSize) + 2)][math.floor(((entity.x + 1) / self.tileSize) + 1)] == 2 then
    return true
   else 
     return false
